@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  
+  labels:
+    run: poc-api-svc
+  name: poc-api-svc
+ 
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      run: poc-api-svc
+  
+  template:
+    metadata:
+     
+      labels:
+        run: poc-api-svc
+    spec:
+      containers:
+      - name: poc-api-svc
+        image: poc-api:v2
+        imagePullPolicy: Never
+        ports:
+          - name: http
+            containerPort: 8088 # The port that the container exposes
+        resources:
+          limits:
+            cpu: "0.5"
+            memory: "500Mi"
+        env:
+        - name: MONGODB_HOST
+          value: mongodb-v1.default.svc.cluster.local
+        - name: MONGODB_PASSWORD
+          value: younes
+        - name: MONGODB_USERNAME
+          value: younes
+        - name: MONGODB_PORT
+          value: "27017"
+        - name: MONGODB_DB
+          value: demo_db
+---
+apiVersion: v1
+kind: Service
+metadata:
+  
+  labels:
+    run: poc-api-svc
+  name: poc-api-svc
+  
+spec:
+  ports:
+  - port: 8088
+    protocol: TCP
+    targetPort: 8088
+  selector:
+    run: poc-api-svc
+  type: ClusterIP
